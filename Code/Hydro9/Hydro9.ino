@@ -19,7 +19,11 @@
 #include <SPI.h>
 #include <MySensor.h>
 #include <Bounce2.h>
+#include <Time.h>
+#include <DS1302RTC.h>  // A  DS3231/DS3232 library
 
+#include "HydroConfig.h"
+#include "MyPump.h"
 
 // Skecth name and version
 #define SKETCH_NAME "Hydro9"
@@ -31,8 +35,11 @@
 
 Bounce debouncer = Bounce();
 int oldValue = 0;
-unsigned long lastUpdate=0;
+unsigned long lastUpdate = 0;
 
+MyMessage msgPump(MY_PUMP_ID, V_STATUS);
+
+MyPump myPump(MY_PUMP_RELAY_PIN);
 void setup()
 {
   // Setup the button
@@ -44,11 +51,13 @@ void setup()
   debouncer.attach(BUTTON_PIN);
   debouncer.interval(5);
 
-  // Initialize Pump
-  pump_init();
-  rtc_init();
+
+  myPump.rtc_init();
   // Request latest time from controller at startup
-  requestTime();  
+  requestTime();
+  wait(1000);// Wait for time form controller
+  Serial.print("Current time: ");
+  Serial.println(myPump.currentDateTime().c_str());
 
 }
 
@@ -57,24 +66,20 @@ void presentation()  {
   sendSketchInfo(SKETCH_NAME, SKETCH_VERSION);
 
   // Register all sensors to gw (they will be created as child devices)
-  pump_present();
+  present(MY_PUMP_ID, S_BINARY, "Pump");
 }
 
-/*
-*  Example on how to asynchronously check for new messages from gw
-*/
+
 void loop()
 {
   debouncer.update();
   // Get the update value
   int value = debouncer.read();
   if (value != oldValue && value == 0) {
-    pump_switch();
+    send(msgPump.set(myPump.pumpSwitch()), false);
   }
   oldValue = value;
-  
-  pump_check();
-  rtc_check();
+
 }
 
 void receive(const MyMessage &message) {
@@ -85,8 +90,13 @@ void receive(const MyMessage &message) {
 
   if (message.type == V_STATUS) {
     // Change relay state
-    pump_receive(message.getBool());
-
+    if (message.getBool())
+      myPump.pumpOn();
+    else
+      myPump.pumpOff();
+      
+    send(msgPump.set(myPump.getState()), false);
+    
     // Write some debug info
     Serial.print("Incoming change for sensor:");
     Serial.print(message.sensor);
@@ -95,7 +105,8 @@ void receive(const MyMessage &message) {
   }
 }
 
-void receiveTime(unsigned long controllerTime) {
-  rtc_set(controllerTime);
+void receiveTime(unsigned long controllerTime)
+{
+  myPump.rtc_set(controllerTime);
 }
 

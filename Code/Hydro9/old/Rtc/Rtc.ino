@@ -1,6 +1,6 @@
 #include <Time.h>  
 #include <DS1302RTC.h>  // A  DS3231/DS3232 library
-#include <Wire.h>
+//#include <Wire.h>
 //#include <SPI.h>
 
 boolean timeReceived = false;
