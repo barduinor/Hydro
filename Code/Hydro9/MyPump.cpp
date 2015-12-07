@@ -92,6 +92,7 @@ void MyPump::pumpOn()
 {
   digitalWrite(MY_PUMP_RELAY_PIN, HIGH);
   _pumpState=true;
+  _pumpLastAction = millis();
   Serial.println("PUMP ON");
 }
 
@@ -99,6 +100,7 @@ void MyPump::pumpOff()
 {
   digitalWrite(MY_PUMP_RELAY_PIN, LOW);
   _pumpState=false;
+  _pumpLastAction = millis();
   Serial.println("PUMP OFF");
 }
 
@@ -115,4 +117,41 @@ bool MyPump::getState()
 {
   return _pumpState;
 }
+
+    void MyPump::pumpCheck()
+    {
+      // Normal Cycle
+      if (_pumpState) // true for on
+      {
+        if((_pumpLastAction + (_pumpRunCycle*60UL*1000UL)<millis()))
+          pumpOff();
+      }
+      else{
+        if((_pumpLastAction + (_pumpStopCycle*60UL*1000UL)<millis()))
+          pumpOn();
+      }
+      
+    }
+
+// Properties Pump
+void MyPump::pumpRunCycle(int minutes)
+{
+  _pumpRunCycle = minutes;
+}
+
+int MyPump::pumpRunCycle()
+{
+  return _pumpRunCycle;
+}
+
+void MyPump::pumpStopCycle(int minutes)
+{
+  _pumpStopCycle = minutes;
+}
+
+int MyPump::pumpStopCycle()
+{
+  return _pumpStopCycle;
+}
+
 

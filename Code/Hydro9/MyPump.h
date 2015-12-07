@@ -22,15 +22,22 @@ class MyPump {
     int _relayPumpPin;
     bool _timeReceived = false;
     bool _pumpState;
-    
+
     bool _pumpSchedule = false;
+    
+    unsigned long _pumpLastAction = 0; // last action millis
+
+    int _pumpRunCycle = 15; // numer of minute pump should run
+    int _pumpStopCycle = 15; //numer of minutes pump should stop
+
+
     int _pumptScheduleHourStart = 7;
     int _pumpScheduleHourStop = 18;
 
     DS1302RTC _RTC;//(int RTC_CE_PIN, int RTC_IO_PIN, int RTC_CLK_PIN);
-    
+
     void printDigits(int digits);
-    
+
 
   public:
     // Constructor
@@ -41,17 +48,24 @@ class MyPump {
     void Schedule(bool scheduleState);
 
     // Methods RTC
-   
+
     void rtc_init();
     void rtc_set(unsigned long controllerTime);
     String currentDateTime();
-    
+
     // Methods Pump
     bool getState();
     void pumpOn();
     void pumpOff();
     bool pumpSwitch();
+    void pumpCheck();
+
+    // Properties Pump
+    void pumpRunCycle(int minutes);
+    int  pumpRunCycle();
     
+    void pumpStopCycle(int minutes);
+    int  pumpStopCycle();
 
 };
 

@@ -59,6 +59,8 @@ void setup()
   wait(1000);// Wait for time form controller
   Serial.print("Current time: ");
   Serial.println(myPump.currentDateTime().c_str());
+  myPump.pumpRunCycle(1);
+  myPump.pumpStopCycle(1);
 
 }
 
@@ -80,7 +82,7 @@ void loop()
     send(msgPump.set(myPump.pumpSwitch()), false);
   }
   oldValue = value;
-
+  myPump.pumpCheck();
 }
 
 void receive(const MyMessage &message) {
