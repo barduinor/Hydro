@@ -52,16 +52,14 @@ void setup()
   debouncer.attach(BUTTON_PIN);
   debouncer.interval(5);
 
-
   myPump.rtc_init();
   // Request latest time from controller at startup
   requestTime();
-  wait(1000);// Wait for time form controller
+  wait(2000);// Wait for time form controller
   Serial.print("Current time: ");
   Serial.println(myPump.currentDateTime().c_str());
-  myPump.pumpRunCycle(1);
-  myPump.pumpStopCycle(1);
-
+  myPump.pumpCycleRun(1);
+  myPump.pumpCycleStop(1);
 }
 
 void presentation()  {
@@ -82,7 +80,10 @@ void loop()
     send(msgPump.set(myPump.pumpSwitch()), false);
   }
   oldValue = value;
-  myPump.pumpCheck();
+  if(myPump.pumpCheck())
+  {
+    send(msgPump.set(myPump.isOn()), false);
+  }
 }
 
 void receive(const MyMessage &message) {
@@ -98,7 +99,7 @@ void receive(const MyMessage &message) {
     else
       myPump.pumpOff();
       
-    send(msgPump.set(myPump.getState()), false);
+    send(msgPump.set(myPump.isOn()), false);
     
     // Write some debug info
     Serial.print("Incoming change for sensor:");

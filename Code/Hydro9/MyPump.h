@@ -21,19 +21,21 @@ class MyPump {
   private:
     int _relayPumpPin;
     bool _timeReceived = false;
-    bool _pumpState;
-
-    bool _pumpSchedule = false;
     
+    bool _isPumpOn;  // True, Pump is Running
+    
+    bool _isCycleOn    = false; // True Normal Cycle On/Off is Running
+    bool _isScheduleOn = false; // True Schedule timer on/on
+    bool _isDayLightOn = false; // True Check
+
     unsigned long _pumpLastAction = 0; // last action millis
 
-    int _pumpRunCycle = 15; // numer of minute pump should run
-    int _pumpStopCycle = 15; //numer of minutes pump should stop
+    int _pumpCycleOn   = 15; // numer of minute pump should run
+    int _pumpCycleStop = 15; //numer of minutes pump should stop
 
-
-    int _pumptScheduleHourStart = 7;
-    int _pumpScheduleHourStop = 18;
-
+    unsigned long _pumpScheduleStart = 28800000; // 8:00  in unix 24 hour
+    unsigned long _pumpScheduleStop   = 68400000; // 18:00 in unix 24 hour
+   
     DS1302RTC _RTC;//(int RTC_CE_PIN, int RTC_IO_PIN, int RTC_CLK_PIN);
 
     void printDigits(int digits);
@@ -54,18 +56,28 @@ class MyPump {
     String currentDateTime();
 
     // Methods Pump
-    bool getState();
+    bool isOn();
+    bool isCycleOn();
+    bool isScheduleOn();
+    bool isDayLightOn();
+    
     void pumpOn();
     void pumpOff();
     bool pumpSwitch();
-    void pumpCheck();
+    bool pumpCheck(); // returns true if there was a change in status
 
     // Properties Pump
-    void pumpRunCycle(int minutes);
-    int  pumpRunCycle();
+    void pumpCycleRun(int minutes);
+    int  pumpCycleRun();
     
-    void pumpStopCycle(int minutes);
-    int  pumpStopCycle();
+    void pumpCycleStop(int minutes);
+    int  pumpCycleStop();
+    
+    void pumpScheduleStart(byte bhour, byte bmin);
+    unsigned long pumpScheduleStart();
+    
+    void pumpScheduleStop(byte bhour, byte bmin);
+    unsigned long pumpScheduleStopMin(); 
 
 };
 

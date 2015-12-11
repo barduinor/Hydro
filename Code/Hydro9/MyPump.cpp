@@ -18,18 +18,15 @@ MyPump::MyPump(int relayPumpPin): _RTC(MY_RTC_CE_PIN, MY_RTC_IO_PIN, MY_RTC_CLK_
   _relayPumpPin = relayPumpPin;
   pinMode(relayPumpPin, OUTPUT);
   pumpOff();
-  // Init RTC
-  //rtc_init();
-
 }
 
 //properties
 bool MyPump::Schedule() {
-  return _pumpSchedule;
+  return _isScheduleOn;
 };
 
 void MyPump::Schedule(bool scheduleState) {
-  _pumpSchedule = scheduleState;
+  _isScheduleOn = scheduleState;
 };
 
 void MyPump::rtc_init() {
@@ -81,8 +78,8 @@ String MyPump::currentDateTime()
   out = out + String(day(t))+" ";
   out = out + String(hour(t))+":";
   out = out + String(minute(t))+":";
-  out = out + String(second(t));
-  Serial.print("Unix Time:");
+  out = out + String(second(t))+" ";
+  //Serial.print("Unix Time:");
   //Serial.println(now.unixtime());
   return out;
 }
@@ -91,67 +88,104 @@ String MyPump::currentDateTime()
 void MyPump::pumpOn()
 {
   digitalWrite(MY_PUMP_RELAY_PIN, HIGH);
-  _pumpState=true;
+  _isPumpOn=true;
   _pumpLastAction = millis();
+  Serial.print(currentDateTime().c_str());
   Serial.println("PUMP ON");
 }
 
 void MyPump::pumpOff()
 {
   digitalWrite(MY_PUMP_RELAY_PIN, LOW);
-  _pumpState=false;
+  _isPumpOn=false;
   _pumpLastAction = millis();
-  Serial.println("PUMP OFF");
+  Serial.print(currentDateTime().c_str());
+  Serial.println(" PUMP OFF");
 }
 
 bool MyPump::pumpSwitch()
 {
-  if( _pumpState )
+  if( _isPumpOn )
     pumpOff();
   else
     pumpOn();
-  return _pumpState;
+  return _isPumpOn;
 }
 
-bool MyPump::getState()
+bool MyPump::isOn()
 {
-  return _pumpState;
+  return _isPumpOn;
+}
+bool MyPump::isCycleOn()
+{
+  return _isCycleOn;
+}
+bool MyPump::isScheduleOn()
+{
+  return _isScheduleOn;
+}
+bool MyPump::isDayLightOn()
+{
+  return _isDayLightOn;
 }
 
-    void MyPump::pumpCheck()
+bool MyPump::pumpCheck()
+{
+  bool retVal=false;
+  // Normal Cycle
+  if (_isPumpOn) // true for on
+  {
+    if((_pumpLastAction + (_pumpCycleOn*60UL*1000UL)<millis()))
     {
-      // Normal Cycle
-      if (_pumpState) // true for on
-      {
-        if((_pumpLastAction + (_pumpRunCycle*60UL*1000UL)<millis()))
-          pumpOff();
-      }
-      else{
-        if((_pumpLastAction + (_pumpStopCycle*60UL*1000UL)<millis()))
-          pumpOn();
-      }
-      
+      pumpOff();
+      retVal=true;
     }
+  }
+  else{
+    if((_pumpLastAction + (_pumpCycleStop*60UL*1000UL)<millis()))
+    {
+      pumpOn();
+      retVal=true;
+    }
+  }
+  return retVal;
+}
 
 // Properties Pump
-void MyPump::pumpRunCycle(int minutes)
+void MyPump::pumpCycleRun(int minutes)
 {
-  _pumpRunCycle = minutes;
+  _pumpCycleOn = minutes;
+}
+int MyPump::pumpCycleRun()
+{
+  return _pumpCycleOn;
 }
 
-int MyPump::pumpRunCycle()
+void MyPump::pumpCycleStop(int minutes)
 {
-  return _pumpRunCycle;
+  _pumpCycleStop = minutes;
+}
+int MyPump::pumpCycleStop()
+{
+  return _pumpCycleStop;
 }
 
-void MyPump::pumpStopCycle(int minutes)
+void MyPump::pumpScheduleStart(byte bhour, byte bmin)
 {
-  _pumpStopCycle = minutes;
+  _pumpScheduleStart = (bhour * 60 * 60 * 1000);
+}
+unsigned long MyPump::pumpScheduleStart()
+{
+  return _pumpScheduleStart;
 }
 
-int MyPump::pumpStopCycle()
+void MyPump::pumpScheduleStop(byte bhour, byte bmin)
 {
-  return _pumpStopCycle;
+  _pumpScheduleStop = (bhour * 60 * 60 * 1000);
+}
+unsigned long MyPump::pumpScheduleStopMin()
+{
+  return _pumpScheduleStop;
 }
 
 
