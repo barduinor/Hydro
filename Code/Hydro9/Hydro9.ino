@@ -58,8 +58,17 @@ void setup()
   wait(2000);// Wait for time form controller
   Serial.print("Current time: ");
   Serial.println(myPump.currentDateTime().c_str());
+  
   myPump.pumpCycleRun(1);
   myPump.pumpCycleStop(1);
+  
+  myPump.pumpScheduleStart(7,33);
+  myPump.pumpScheduleStop(17,30);
+  
+  myPump.mode(RUN_MODE_NORMAL);
+  
+  myPump.pumpStatus();
+  
 }
 
 void presentation()  {
