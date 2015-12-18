@@ -38,6 +38,8 @@ class MyPump {
 
     unsigned long _pumpScheduleStart  = 28800000; // 8:00  in unix 24 hour
     unsigned long _pumpScheduleStop   = 68400000; // 18:00 in unix 24 hour
+    
+    int _pumpLuxStart = 70; // Value from Ligth sensor to keep cycle the pump
    
     DS1302RTC _RTC;//(int RTC_CE_PIN, int RTC_IO_PIN, int RTC_CLK_PIN);
     
@@ -46,6 +48,7 @@ class MyPump {
     bool dayLightCheck(); // true id pump is supposed to be running on daylight
     unsigned long timeToUnixDay(byte bHour, byte bMin, byte bSec); // converts time to UnixDay
     unsigned long currentUnixDay(); // Returns the current unix 24 hour day in milisec
+    
 
   public:
   // Constructor
@@ -81,8 +84,13 @@ class MyPump {
     void pumpScheduleStop(byte bhour, byte bmin);
     unsigned long pumpScheduleStop(); 
     
+    void pumpLuxStart(int lux);
+    int pumpLuxStart();
+    
     void mode(pump_run_mode runMode);
     pump_run_mode mode();
+    
+    int currentLuxLevel(); // returns current light level
 };
 
 #endif

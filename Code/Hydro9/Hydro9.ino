@@ -38,7 +38,11 @@ Bounce debouncer = Bounce();
 int oldValue = 0;
 unsigned long lastUpdate = 0;
 
+unsigned long light_last_update=0;
+
 MyMessage msgPump(MY_PUMP_ID, V_STATUS);
+MyMessage msgLight(MY_PUMP_ID, V_LEVEL);
+MyMessage msgTime(MY_PUMP_ID,V_VAR1);
 
 MyPump myPump(MY_PUMP_RELAY_PIN);
 void setup()
@@ -59,15 +63,20 @@ void setup()
   Serial.print("Current time: ");
   Serial.println(myPump.currentDateTime().c_str());
   
-  myPump.pumpCycleRun(1);
-  myPump.pumpCycleStop(1);
+  // myPump.pumpCycleRun(1);
+  // myPump.pumpCycleStop(1);
   
   myPump.pumpScheduleStart(7,33);
   myPump.pumpScheduleStop(17,30);
   
-  myPump.mode(RUN_MODE_NORMAL);
+  myPump.pumpLuxStart(70);
+  
+  myPump.mode(RUN_MODE_DAYLIGHT);
   
   myPump.pumpStatus();
+  
+  send(msgPump.set(myPump.isOn()), false);
+  send(msgTime.set(myPump.currentDateTime().c_str()), false);
   
 }
 
@@ -92,6 +101,18 @@ void loop()
   if(myPump.pumpCheck())
   {
     send(msgPump.set(myPump.isOn()), false);
+  }
+  
+  if (((light_last_update + (15UL * 60UL * 1000UL)) < millis()) or (light_last_update == 0)){
+    int lightLevel = myPump.currentLuxLevel(); 
+    
+    send(msgLight.set(lightLevel), false);
+    send(msgTime.set(myPump.currentDateTime().c_str()), false);
+    
+    Serial.print(myPump.currentDateTime().c_str());
+    Serial.print("Light level: ");
+    Serial.println(lightLevel);
+    light_last_update = millis();
   }
 }
 

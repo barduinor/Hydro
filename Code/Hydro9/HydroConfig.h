@@ -28,5 +28,9 @@
 #define MY_RTC_CLK_PIN 18
 #endif
 
+#ifndef LIGHT_SENSOR_PIN
+#define LIGHT_SENSOR_PIN A0
+#endif
+
 
 

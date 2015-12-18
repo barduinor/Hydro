@@ -123,6 +123,8 @@
   bool MyPump::pumpCheck()
   {
       switch(_runMode){
+        case RUN_MODE_OFF    : if(_isPumpOn) pumpOff();
+                              break;
         case RUN_MODE_NORMAL :cycleCheck();
                               break;
         case RUN_MODE_SCHEDULE: if(scheduleCheck() || _isPumpOn) cycleCheck();
@@ -154,6 +156,12 @@
     Serial.print(" Stop:");
     Serial.print(_pumpScheduleStop);
     Serial.println();
+    
+    Serial.print("Pump Daylight Start:");
+    Serial.print(_pumpLuxStart);
+    Serial.print(" Current:");
+    Serial.print(currentLuxLevel());
+    Serial.println();
 
     
     Serial.println("****************************************************");
@@ -172,19 +180,23 @@
     return timeToUnixDay(hour(t),minute(t),second(t));
   }
   
+  int MyPump::currentLuxLevel(){
+    return ((1023-analogRead(LIGHT_SENSOR_PIN))/10.23);
+  }
+  
   bool MyPump::cycleCheck(){
     bool retVal=false;
     // Normal Cycle
     if (_isPumpOn) // true for on
     {
-      if((_pumpLastAction + (_pumpCycleOn*60UL*1000UL)<millis()) or _pumpLastAction==0)
+      if((_pumpLastAction + (_pumpCycleOn*60UL*1000UL)<millis()))
       {
         pumpOff();
         retVal=true;
       }
     }
     else{
-      if((_pumpLastAction + (_pumpCycleStop*60UL*1000UL)<millis()))
+      if((_pumpLastAction + (_pumpCycleStop*60UL*1000UL)<millis()) or _pumpLastAction==0)
       {
         pumpOn();
         retVal=true;
@@ -202,7 +214,7 @@
   }
   
   bool MyPump::dayLightCheck(){
-    return false; // TBI ***********
+    return ( currentLuxLevel() >= _pumpLuxStart);
   }
 
 // Properties Pump *************************************************
@@ -249,31 +261,12 @@
     return _runMode;
   }
   
-  
-
-//  bool MyPump::cycleOn()
-//  {
-//    return _isCycleOn;
-//  }
-//  void MyPump::cycleOn(bool isOn){
-//    _isCycleOn = isOn;
-//  }
-//  
-//  bool MyPump::scheduleOn()
-//  {
-//    return _isScheduleOn;
-//  }
-//  void MyPump::scheduleOn(bool isOn){
-//    _isScheduleOn = isOn;
-//  }
-//  
-//  bool MyPump::dayLightOn()
-//  {
-//    return _isDayLightOn;
-//  }
-//  void MyPump::dayLightOn(bool isOn){
-//    _isDayLightOn = isOn;
-//  }
+  void MyPump::pumpLuxStart(int lux){
+    _pumpLuxStart = lux;
+  }
+  int MyPump::pumpLuxStart(){
+    return _pumpLuxStart;
+  }
 
 
 // Utils ************************************************************
