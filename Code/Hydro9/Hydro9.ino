@@ -30,9 +30,6 @@
 #define SKETCH_NAME "Hydro9"
 #define SKETCH_VERSION "v0.1"
 
-// Pin Assignments
-
-#define BUTTON_PIN  4  // Arduino Digital I/O pin number for button 
 
 Bounce debouncer = Bounce();
 int oldValue = 0;
@@ -40,9 +37,26 @@ unsigned long lastUpdate = 0;
 
 unsigned long light_last_update=0;
 
-MyMessage msgPump(MY_PUMP_ID, V_STATUS);
-MyMessage msgLight(MY_PUMP_ID, V_LEVEL);
-MyMessage msgTime(MY_PUMP_ID,V_VAR1);
+//present(MY_PUMP_ID, S_BINARY, "Pump Switch");
+  MyMessage msgPump(MY_PUMP_ID, V_STATUS);
+  
+//present(MY_PUMPMODE_ID, S_SCENE_CONTROLLER, "Pump Mode");
+  MyMessage msgPumpMode(MY_PUMPMODE_ID,V_SCENE_ON);
+  
+//present(MY_SCHEDULER_ID, S_CUSTOM, "Pump  Scheduler");
+  MyMessage msgScheduleStart(MY_SCHEDULER_ID,V_VAR1);
+  MyMessage msgScheduleStop(MY_SCHEDULER_ID,V_VAR2);
+  
+//present(MY_DAYLIGHT_ID, S_CUSTOM, "Pump Daylight");
+  MyMessage msgLight(MY_DAYLIGHT_ID, V_LEVEL);
+  MyMessage msgLightNow(MY_DAYLIGHT_ID, V_VOLUME);
+
+//present(MY_PUMPTIME_ID, S_CUSTOM, "Pump Time");
+  MyMessage msgTime(MY_PUMPTIME_ID,V_VAR1);
+  
+//present(MY_PUMPCYCLE_ID, S_CUSTOM, "Pump Cycle");
+  MyMessage msgCycleOn(MY_PUMPCYCLE_ID,V_LEVEL);
+  MyMessage msgCycleOff(MY_PUMPCYCLE_ID,V_VOLUME);
 
 MyPump myPump(MY_PUMP_RELAY_PIN);
 void setup()
@@ -59,9 +73,7 @@ void setup()
   myPump.rtc_init();
   // Request latest time from controller at startup
   requestTime();
-  wait(2000);// Wait for time form controller
-  Serial.print("Current time: ");
-  Serial.println(myPump.currentDateTime().c_str());
+  wait(2000);// Wait for time from controller
   
   // myPump.pumpCycleRun(1);
   // myPump.pumpCycleStop(1);
@@ -73,11 +85,7 @@ void setup()
   
   myPump.mode(RUN_MODE_DAYLIGHT);
   
-  myPump.pumpStatus();
-  
-  send(msgPump.set(myPump.isOn()), false);
-  send(msgTime.set(myPump.currentDateTime().c_str()), false);
-  
+  reportStatus();  
 }
 
 void presentation()  {
@@ -85,7 +93,13 @@ void presentation()  {
   sendSketchInfo(SKETCH_NAME, SKETCH_VERSION);
 
   // Register all sensors to gw (they will be created as child devices)
-  present(MY_PUMP_ID, S_BINARY, "Pump");
+  present(MY_PUMP_ID, S_BINARY, "Pump Switch");
+  present(MY_PUMPCYCLE_ID, S_CUSTOM, "Pump Cycle");
+  present(MY_PUMPMODE_ID, S_SCENE_CONTROLLER, "Pump Mode");
+  present(MY_SCHEDULER_ID, S_CUSTOM, "Pump  Scheduler");
+  present(MY_DAYLIGHT_ID, S_CUSTOM, "Pump Daylight");
+  present(MY_PUMPTIME_ID, S_CUSTOM, "Pump Time");
+  
 }
 
 
@@ -100,47 +114,123 @@ void loop()
   oldValue = value;
   if(myPump.pumpCheck())
   {
-    send(msgPump.set(myPump.isOn()), false);
+     reportStatus();
   }
   
-  if (((light_last_update + (15UL * 60UL * 1000UL)) < millis()) or (light_last_update == 0)){
-    int lightLevel = myPump.currentLuxLevel(); 
-    
-    send(msgLight.set(lightLevel), false);
-    send(msgTime.set(myPump.currentDateTime().c_str()), false);
-    
+  if (((light_last_update + (15L * 60L * 1000UL)) < millis()) or (light_last_update == 0)){
     Serial.print(myPump.currentDateTime().c_str());
     Serial.print("Light level: ");
-    Serial.println(lightLevel);
+    Serial.println(myPump.currentLuxLevel());
     light_last_update = millis();
+    
+    reportStatus();
   }
 }
 
 void receive(const MyMessage &message) {
+  String myPayload = message.getString();
   // We only expect one type of message from controller. But we better check anyway.
   if (message.isAck()) {
     Serial.println("This is an ack from gateway");
   }
 
-  if (message.type == V_STATUS) {
-    // Change relay state
-    if (message.getBool())
-      myPump.pumpOn();
-    else
-      myPump.pumpOff();
-      
-    send(msgPump.set(myPump.isOn()), false);
+  switch(message.sensor){
+    case MY_PUMP_ID:      if (message.type == V_STATUS) {
+                            if (message.getBool())
+                              myPump.pumpOn();
+                            else
+                              myPump.pumpOff();
+                          }
+                          break;
+                          
+    case MY_PUMPCYCLE_ID: if (message.type == V_LEVEL) {
+                            myPump.pumpCycleRun(message.getInt());
+                          } 
+                          if (message.type == V_VOLUME) {
+                            myPump.pumpCycleStop(message.getInt());
+                          } 
+                          break;
+                          
+    case MY_PUMPMODE_ID:  if (message.type == V_SCENE_ON) {
+                            myPump.mode((pump_run_mode)message.getInt());
+                          } 
+                          break;
+                          
+    case MY_SCHEDULER_ID: 
+                          if (message.type == V_VAR1) {
+                            myPump.pumpScheduleStart((byte)myPayload.substring(0,2).toInt(),(byte)myPayload.substring(3,5).toInt()) ;   
+                          } 
+                          if (message.type == V_VAR2) {
+                            myPump.pumpScheduleStop((byte)myPayload.substring(0,2).toInt(),(byte)myPayload.substring(3,5).toInt()) ;   
+                          } 
+                          break;
+                          
+    case MY_DAYLIGHT_ID:  if (message.type == V_LEVEL) {
+                            myPump.pumpLuxStart(message.getInt());
+                          } 
+                          
+                          break;
     
-    // Write some debug info
-    Serial.print("Incoming change for sensor:");
-    Serial.print(message.sensor);
-    Serial.print(", New status: ");
-    Serial.println(message.getBool());
+    default:  break;
   }
+
+//  //debug message
+//  Serial.println();
+//  Serial.print("********************************");
+//  Serial.println();
+//  Serial.print("Get String:");
+//  Serial.print(message.getString());
+//  Serial.println();
+//  Serial.print("Get Boolean:");
+//  Serial.print(message.getBool());
+//  Serial.println();
+//  Serial.print("Get Byte:");
+//  Serial.print(message.getByte());
+//  Serial.println();
+//  Serial.print("Get Float:");
+//  Serial.print(message.getFloat());
+//  Serial.println();
+//  Serial.print("Get Int:");
+//  Serial.print(message.getInt());
+//  Serial.println();
+//  Serial.print("Get UInt:");
+//  Serial.print(message.getUInt());
+//  Serial.println();
+//  Serial.print("Get Long:");
+//  Serial.print(message.getLong());
+//  Serial.println();
+//  Serial.print("Get ULong:");
+//  Serial.print(message.getULong());
+//  Serial.println();
+//  Serial.print("Get Command:");
+//  Serial.print(message.getCommand());
+//  Serial.println();
+//  Serial.print("********************************");
+//  Serial.println();
+  reportStatus();
 }
 
 void receiveTime(unsigned long controllerTime)
 {
   myPump.rtc_set(controllerTime);
+}
+
+void reportStatus(){
+  myPump.pumpStatus();
+  
+  send(msgPump.set(myPump.isOn()), false);
+  
+  send(msgPumpMode.set(myPump.mode()),false);
+  
+  send(msgScheduleStart.set(myPump.pumpScheduleStart().c_str()),false);
+  send(msgScheduleStop.set(myPump.pumpScheduleStop().c_str()),false);
+  
+  send(msgLight.set(myPump.pumpLuxStart()),false);
+  send(msgLightNow.set(myPump.currentLuxLevel()), false);
+  
+  send(msgCycleOn.set(myPump.pumpCycleRun()), false);
+  send(msgCycleOff.set(myPump.pumpCycleStop()), false);
+  
+  send(msgTime.set(myPump.currentDateTime().c_str()), false);
 }
 

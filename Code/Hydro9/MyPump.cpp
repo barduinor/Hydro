@@ -20,13 +20,22 @@
     pinMode(relayPumpPin, OUTPUT);
     pumpOff();
     _pumpLastAction=0;
+
   }
 
   void MyPump::rtc_init() 
   {
+    
+    // Activate RTC module
+    digitalWrite(MY_RTC_GND_PIN, LOW);
+    pinMode(MY_RTC_GND_PIN, OUTPUT);
+
+    digitalWrite(MY_RTC_VCC_PIN, HIGH);
+    pinMode(MY_RTC_VCC_PIN, OUTPUT);
+  
     Serial.println("RTC module activated");
     Serial.println();
-    //delay(500);
+    delay(500);
   
     if (_RTC.haltRTC()) {
       Serial.println("The DS1302 is stopped.  Please run the SetTime");
@@ -37,7 +46,8 @@
       Serial.println("The DS1302 is write protected. This normal.");
       Serial.println();
     }
-  
+    //delay(5000);
+    
     // the function to get the time from the RTC
     setSyncProvider(_RTC.get);
     
@@ -61,6 +71,9 @@
     Serial.println(controllerTime);
     _RTC.set(controllerTime); // this sets the RTC to the time from controller - which we do want periodically
     _timeReceived = true;
+    Serial.print("Pump Time:");
+    Serial.print(currentDateTime().c_str());
+    Serial.println();
     
   }
 
@@ -137,7 +150,7 @@
   void MyPump::pumpStatus(){
     Serial.println("**************** PUMP STATUS ***********************");
     
-    Serial.print("Pump mode is: ");
+    Serial.print("Pump Mode is:  ");
     switch(_runMode){
       case RUN_MODE_OFF:      Serial.print("Off");      break;
       case RUN_MODE_NORMAL:   Serial.print("Normal");   break;
@@ -148,19 +161,27 @@
     }
     Serial.println();
     
-    Serial.print("Pump Schedule: ");
-    Serial.print(" Start:");
-    Serial.print(_pumpScheduleStart);
-    Serial.print(" Current:");
-    Serial.print(currentUnixDay());
-    Serial.print(" Stop:");
-    Serial.print(_pumpScheduleStop);
+    Serial.print("Pump Cycle:    On:");
+    Serial.print(pumpCycleRun());
+    Serial.print(" Off:");
+    Serial.print(pumpCycleStop());
     Serial.println();
     
-    Serial.print("Pump Daylight Start:");
-    Serial.print(_pumpLuxStart);
+    Serial.print("Pump Schedule: ");
+    Serial.print("Start:");
+    Serial.print(pumpScheduleStart().c_str());
+    Serial.print(" Stop:");
+    Serial.print(pumpScheduleStop().c_str());
+    Serial.println();
+    
+    Serial.print("Pump Daylight: Start:");
+    Serial.print(pumpLuxStart());
     Serial.print(" Current:");
     Serial.print(currentLuxLevel());
+    Serial.println();
+    
+    Serial.print("Pump Time:     ");
+    Serial.print(currentDateTime().c_str());
     Serial.println();
 
     
@@ -175,6 +196,31 @@
              (bSec  * 1000UL)
            );
   }
+  
+  String MyPump::unixDayToTimeString(unsigned long unixDay){
+      byte bHour;
+      byte bMin;
+      byte bSec;
+      String out;
+      
+      bHour = unixDay/(60UL * 60UL * 1000UL);
+      unixDay = unixDay % (60UL * 60UL * 1000UL);
+      
+      bMin = unixDay/(60UL * 1000UL);
+      unixDay = unixDay % (60UL * 1000UL);
+      
+      bSec = unixDay/(1000UL);
+      
+      out = String(bHour<10?"0":"");
+      out = out + String(bHour)+":";
+      out = out + String(bMin<10?"0":"");
+      out = out + String(bMin);
+      //out = out + ":"+String(bSec<10?"0":"");
+      //out = out + String(bSec)+"";
+      
+      return out;
+  }
+  
   unsigned long MyPump::currentUnixDay(){
     time_t t = now();
     return timeToUnixDay(hour(t),minute(t),second(t));
@@ -240,18 +286,18 @@
   {
     _pumpScheduleStart = timeToUnixDay(bHour,bMin,0);
   }
-  unsigned long MyPump::pumpScheduleStart()
+  String MyPump::pumpScheduleStart()
   {
-    return _pumpScheduleStart;
+    return unixDayToTimeString(_pumpScheduleStart);
   }
 
   void MyPump::pumpScheduleStop(byte bHour, byte bMin)
   {
     _pumpScheduleStop = timeToUnixDay(bHour,bMin,0);
   }
-  unsigned long MyPump::pumpScheduleStop()
+  String MyPump::pumpScheduleStop()
   {
-    return _pumpScheduleStop;
+    return unixDayToTimeString(_pumpScheduleStop);
   }
   
   void MyPump::mode(pump_run_mode runMode){

@@ -15,8 +15,6 @@
 
 #include <DS1302RTC.h>  // A  DS3231/DS3232 library
 
-#define RELAY_PUMP  3  // Arduino Digital I/O pin number for relay pump
-
   typedef enum {
     RUN_MODE_OFF,
     RUN_MODE_NORMAL,
@@ -47,6 +45,7 @@ class MyPump {
     bool scheduleCheck(); // True if pump is supposed to be running based on timer
     bool dayLightCheck(); // true id pump is supposed to be running on daylight
     unsigned long timeToUnixDay(byte bHour, byte bMin, byte bSec); // converts time to UnixDay
+    String unixDayToTimeString(unsigned long unixDay);
     unsigned long currentUnixDay(); // Returns the current unix 24 hour day in milisec
     
 
@@ -79,10 +78,10 @@ class MyPump {
     int  pumpCycleStop();
     
     void pumpScheduleStart(byte bhour, byte bmin);
-    unsigned long pumpScheduleStart();
+    String pumpScheduleStart();
     
     void pumpScheduleStop(byte bhour, byte bmin);
-    unsigned long pumpScheduleStop(); 
+    String pumpScheduleStop(); 
     
     void pumpLuxStart(int lux);
     int pumpLuxStart();
