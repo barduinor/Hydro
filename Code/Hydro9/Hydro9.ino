@@ -96,7 +96,7 @@ void presentation()  {
   present(MY_PUMP_ID, S_BINARY, "Pump Switch");
   present(MY_PUMPCYCLE_ID, S_CUSTOM, "Pump Cycle");
   present(MY_PUMPMODE_ID, S_SCENE_CONTROLLER, "Pump Mode");
-  present(MY_SCHEDULER_ID, S_CUSTOM, "Pump  Scheduler");
+  present(MY_SCHEDULER_ID, S_CUSTOM, "Pump Scheduler");
   present(MY_DAYLIGHT_ID, S_CUSTOM, "Pump Daylight");
   present(MY_PUMPTIME_ID, S_CUSTOM, "Pump Time");
   
