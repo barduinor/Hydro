@@ -15,10 +15,12 @@
 #include "MyEnvironment.h"
 #include "HydroConfig.h"
 #include <DHT.h> // DHT Lib
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
 // Constructor
 
-  MyEnvironment::MyEnvironment() {
+  MyEnvironment::MyEnvironment():_oneWire(ONE_WIRE_BUS),_dallas(&_oneWire) {
 
   }
   
@@ -30,9 +32,40 @@
     Serial.println("Done!");
   }
   
+  void MyEnvironment::dallasInit(){
+    Serial.println("Dallas Temperature IC Control Library Demo");
+
+    // locate devices on the bus
+    Serial.print("Locating devices...");
+    _dallas.begin();
+    Serial.print("Found ");
+    Serial.print(_dallas.getDeviceCount(), DEC);
+    Serial.println(" devices.");
+  
+    // report parasite power requirements
+    Serial.print("Parasite power is: "); 
+    if (_dallas.isParasitePowerMode()) Serial.println("ON");
+    else Serial.println("OFF");
+    
+    if (!_dallas.getAddress(_waterThermometer, 0)) {
+      Serial.println("Unable to find address for Device 0"); 
+    }else {
+      // show the addresses we found on the bus
+      Serial.print("Device 0 Address: ");
+      printAddress(_waterThermometer);
+      Serial.println();
+      // set the resolution to 9 bit (Each Dallas/Maxim device is capable of several different resolutions)
+      _dallas.setResolution(_waterThermometer, 9);
+      Serial.print("Device 0 Resolution: ");
+      Serial.print(_dallas.getResolution(_waterThermometer), DEC); 
+      Serial.println();
+    }
+  }
+  
   bool MyEnvironment::check(){
     if((_lastCheck+(15UL * 60UL * 1000UL)) < millis() or (_lastCheck == 0) ){
         updateDht();
+        updateDallas();
         _lastCheck = millis();
         return true;
     }else {
@@ -77,3 +110,17 @@
     }
   }
   
+  void MyEnvironment::updateDallas(){
+    _dallas.requestTemperatures();
+    _waterTemp = _dallas.getTempC(_waterThermometer);
+  }
+  
+  // function to print a device address
+  void MyEnvironment::printAddress(DeviceAddress deviceAddress)
+  {
+    for (uint8_t i = 0; i < 8; i++)
+    {
+      if (deviceAddress[i] < 16) Serial.print("0");
+      Serial.print(deviceAddress[i], HEX);
+    }
+  }

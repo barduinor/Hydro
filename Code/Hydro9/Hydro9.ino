@@ -23,6 +23,8 @@
 #include <Time.h>
 #include <DS1302RTC.h>  // A  DS3231/DS3232 library
 #include <DHT.h> // DHT library
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
 #include "HydroConfig.h"
 #include "MyPump.h"
@@ -74,6 +76,7 @@ void setup()
 {
   //********************** CLASSES *******************
   myEnvironment.dhtInit();
+  myEnvironment.dallasInit();
   myPump.rtc_init();
   
   // ********************* HARDWHERE *****************
@@ -261,6 +264,8 @@ void reportStatus(){
   
   send(msgAirTemp.set(myEnvironment.getAirTemp(),1), false);
   send(msgAirHum.set(myEnvironment.getAirHum(),1), false);
+  
+  send(msgWaterTemp.set(myEnvironment.getWaterTemp(),1), false);
 
 }
 

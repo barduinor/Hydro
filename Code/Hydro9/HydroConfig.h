@@ -74,6 +74,11 @@
 
 #define DHT_PIN 5
 
+#define COMPARE_TEMP 1 // Send temperature only if changed? 1 = Yes 0 = No
+
+#define ONE_WIRE_BUS 6 // Pin where dallase sensor is connected 
+#define MAX_ATTACHED_DS18B20 16
+
 
 
 

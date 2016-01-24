@@ -14,6 +14,8 @@
 #include "Arduino.h"
 #include "HydroConfig.h"
 #include <DHT.h> // DHT Lib
+#include <DallasTemperature.h>
+#include <OneWire.h>
 
   class MyEnvironment {
     private:
@@ -24,14 +26,20 @@
       unsigned long _lastUpdate=0;
       
       DHT _dht;
+      OneWire _oneWire;
+      DallasTemperature _dallas;
+      DeviceAddress _waterThermometer;
       
       void updateDht();
       void updateDallas();
       
+      
     protected:
+      void printAddress(DeviceAddress deviceAddress);
     public:
       MyEnvironment();  //Contructor
       void dhtInit();
+      void dallasInit();
       bool check();
       void status();
       float getAirTemp();
