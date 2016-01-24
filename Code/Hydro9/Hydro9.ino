@@ -22,9 +22,11 @@
 #include <Bounce2.h>
 #include <Time.h>
 #include <DS1302RTC.h>  // A  DS3231/DS3232 library
+#include <DHT.h> // DHT library
 
 #include "HydroConfig.h"
 #include "MyPump.h"
+#include "MyEnvironment.h"
 
 // Skecth name and version
 #define SKETCH_NAME "Hydro9"
@@ -57,10 +59,24 @@ unsigned long light_last_update=0;
 //present(MY_PUMPCYCLE_ID, S_CUSTOM, "Pump Cycle");
   MyMessage msgCycleOn(MY_PUMPCYCLE_ID,V_LEVEL);
   MyMessage msgCycleOff(MY_PUMPCYCLE_ID,V_VOLUME);
+  
+//present(MY_AIRSENSOR_ID, S_TEMP, "Air Sensor");
+  MyMessage msgAirTemp(MY_AIRSENSOR_ID,V_TEMP);
+  MyMessage msgAirHum(MY_AIRSENSOR_ID,V_HUM);
+  
+//present(MY_WATERSENSOR_ID, S_TEMP, "Water Sensor");
+  MyMessage msgWaterTemp(MY_WATERSENSOR_ID,V_TEMP);
 
 MyPump myPump(MY_PUMP_RELAY_PIN);
+MyEnvironment myEnvironment;
+
 void setup()
 {
+  //********************** CLASSES *******************
+  myEnvironment.dhtInit();
+  myPump.rtc_init();
+  
+  // ********************* HARDWHERE *****************
   // Setup the button
   pinMode(BUTTON_PIN, INPUT);
   // Activate internal pull-up
@@ -69,14 +85,13 @@ void setup()
   // After setting up the button, setup debouncer
   debouncer.attach(BUTTON_PIN);
   debouncer.interval(5);
-
-  myPump.rtc_init();
+  
+  
+  
   // Request latest time from controller at startup
+  
   requestTime();
   wait(2000);// Wait for time from controller
-  
-  // myPump.pumpCycleRun(1);
-  // myPump.pumpCycleStop(1);
   
   myPump.pumpScheduleStart(7,33);
   myPump.pumpScheduleStop(17,30);
@@ -85,10 +100,12 @@ void setup()
   
   myPump.mode(RUN_MODE_DAYLIGHT);
   
-  reportStatus();  
+  //reportStatus();  
 }
 
 void presentation()  {
+  Serial.println("Starting presentation");
+  
   // Send the sketch version information to the gateway and Controller
   sendSketchInfo(SKETCH_NAME, SKETCH_VERSION);
 
@@ -98,8 +115,11 @@ void presentation()  {
   present(MY_PUMPMODE_ID, S_SCENE_CONTROLLER, "Pump Mode");
   present(MY_SCHEDULER_ID, S_CUSTOM, "Pump Scheduler");
   present(MY_DAYLIGHT_ID, S_CUSTOM, "Pump Daylight");
+  present(MY_AIRSENSOR_ID, S_TEMP, "Air Sensor");
+  present(MY_WATERSENSOR_ID, S_TEMP, "Water Sensor");
   present(MY_PUMPTIME_ID, S_CUSTOM, "Pump Time");
   
+  Serial.println("End presentation");
 }
 
 
@@ -112,9 +132,14 @@ void loop()
     send(msgPump.set(myPump.pumpSwitch()), false);
   }
   oldValue = value;
-  if(myPump.pumpCheck())
-  {
-     reportStatus();
+  
+//  if(myPump.pumpCheck())
+//  {
+//     reportStatus();
+//  }
+  
+  if(myEnvironment.check()){
+    reportStatus();
   }
   
   if (((light_last_update + (15L * 60L * 1000UL)) < millis()) or (light_last_update == 0)){
@@ -217,6 +242,7 @@ void receiveTime(unsigned long controllerTime)
 
 void reportStatus(){
   myPump.pumpStatus();
+  myEnvironment.status();
   
   send(msgPump.set(myPump.isOn()), false);
   
@@ -232,5 +258,9 @@ void reportStatus(){
   send(msgCycleOff.set(myPump.pumpCycleStop()), false);
   
   send(msgTime.set(myPump.currentDateTime().c_str()), false);
+  
+  send(msgAirTemp.set(myEnvironment.getAirTemp(),1), false);
+  send(msgAirHum.set(myEnvironment.getAirHum(),1), false);
+
 }
 

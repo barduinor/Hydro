@@ -20,7 +20,6 @@
     pinMode(relayPumpPin, OUTPUT);
     pumpOff();
     _pumpLastAction=0;
-
   }
 
   void MyPump::rtc_init() 
@@ -103,7 +102,7 @@
 
   void MyPump::pumpOn()
   {
-    digitalWrite(MY_PUMP_RELAY_PIN, HIGH);
+    digitalWrite(MY_PUMP_RELAY_PIN, RELAY_ON);
     _isPumpOn=true;
     _pumpLastAction = millis();
     Serial.print(currentDateTime().c_str());
@@ -112,7 +111,7 @@
 
   void MyPump::pumpOff()
   {
-    digitalWrite(MY_PUMP_RELAY_PIN, LOW);
+    digitalWrite(MY_PUMP_RELAY_PIN, RELAY_OFF);
     _isPumpOn=false;
     _pumpLastAction = millis();
     Serial.print(currentDateTime().c_str());
