@@ -136,13 +136,9 @@ void loop()
   }
   oldValue = value;
   
-//  if(myPump.pumpCheck())
-//  {
-//     reportStatus();
-//  }
-  
-  if(myEnvironment.check()){
-    reportStatus();
+  if(myPump.pumpCheck() || myEnvironment.check())
+  {
+     reportStatus();
   }
   
   if (((light_last_update + (15L * 60L * 1000UL)) < millis()) or (light_last_update == 0)){
