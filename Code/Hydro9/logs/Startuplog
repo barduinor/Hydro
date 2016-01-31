@@ -1,0 +1,94 @@
+**************** PUMP STATUS ***********************
+Pump Mode is:  Daylight
+Pump Cycle:    On:15 Off:15
+Pump Schedule: Start:07:33 Stop:17:30
+Pump Daylight: Start:70 Current:4
+Pump Time:     2000/01/01 00:00:15 
+****************************************************
+************* ENVIRONMENT STATUS *******************
+Air temperature:22.00 Air humidity:33.60
+Water temperature:20.00
+****************************************************
+
+
+Starting sensor (RNNNA-, 1.6.0-beta)
+Radio init successful.
+Initializing DHT... Done!
+Dallas Temperature IC Control Library Demo
+Locating devices...Found 1 devices.
+Parasite power is: OFF
+Device 0 Address: 2817611D070000C3
+Device 0 Resolution: 9
+RTC module activated
+
+The DS1302 is write protected. This normal.
+
+RTC Sync TieStatus: 2 timeSet 2 Ok!
+send: 7-7-0-0 s=255,c=3,t=1,pt=0,l=0,sg=0,st=ok:
+read: 0-0-7 s=255,c=3,t=1,pt=0,l=10,sg=0:1454110229
+Time value received: 1454110229
+Pump Time:2016/01/29 23:30:28 
+send: 7-7-0-0 s=255,c=3,t=15,pt=1,l=1,sg=0,st=ok:0
+send: 7-7-0-0 s=255,c=0,t=17,pt=0,l=10,sg=0,st=ok:1.6.0-beta
+send: 7-7-0-0 s=255,c=3,t=6,pt=1,l=1,sg=0,st=ok:0
+read: 0-0-7 s=255,c=3,t=6,pt=0,l=1,sg=0:M
+Starting presentation
+send: 7-7-0-0 s=255,c=3,t=11,pt=0,l=6,sg=0,st=ok:Hydro9
+send: 7-7-0-0 s=255,c=3,t=12,pt=0,l=4,sg=0,st=ok:v0.1
+send: 7-7-0-0 s=1,c=0,t=3,pt=0,l=11,sg=0,st=ok:Pump Switch
+send: 7-7-0-0 s=2,c=0,t=23,pt=0,l=10,sg=0,st=ok:Pump Cycle
+send: 7-7-0-0 s=3,c=0,t=25,pt=0,l=9,sg=0,st=ok:Pump Mode
+send: 7-7-0-0 s=4,c=0,t=23,pt=0,l=14,sg=0,st=ok:Pump Scheduler
+send: 7-7-0-0 s=5,c=0,t=23,pt=0,l=13,sg=0,st=ok:Pump Daylight
+send: 7-7-0-0 s=6,c=0,t=6,pt=0,l=10,sg=0,st=ok:Air Sensor
+send: 7-7-0-0 s=7,c=0,t=6,pt=0,l=12,sg=0,st=ok:Water Sensor
+send: 7-7-0-0 s=10,c=0,t=23,pt=0,l=9,sg=0,st=ok:Pump Time
+End presentation
+Init complete, id=7, parent=0, distance=1
+**************** PUMP STATUS ***********************
+Pump Mode is:  Daylight
+Pump Cycle:    On:15 Off:15
+Pump Schedule: Start:07:33 Stop:17:30
+Pump Daylight: Start:70 Current:59
+Pump Time:     2016/01/29 23:30:34 
+****************************************************
+************* ENVIRONMENT STATUS *******************
+Air temperature:10.60 Air humidity:37.90
+Water temperature:10.00
+****************************************************
+send: 7-7-0-0 s=1,c=1,t=2,pt=1,l=1,sg=0,st=ok:0
+send: 7-7-0-0 s=3,c=1,t=19,pt=2,l=2,sg=0,st=ok:3
+send: 7-7-0-0 s=4,c=1,t=24,pt=0,l=5,sg=0,st=ok:07:33
+send: 7-7-0-0 s=4,c=1,t=25,pt=0,l=5,sg=0,st=ok:17:30
+send: 7-7-0-0 s=5,c=1,t=37,pt=2,l=2,sg=0,st=ok:70
+send: 7-7-0-0 s=5,c=1,t=35,pt=2,l=2,sg=0,st=ok:59
+send: 7-7-0-0 s=2,c=1,t=37,pt=2,l=2,sg=0,st=ok:15
+send: 7-7-0-0 s=2,c=1,t=35,pt=2,l=2,sg=0,st=ok:15
+send: 7-7-0-0 s=10,c=1,t=24,pt=0,l=20,sg=0,st=ok:2016/01/29 23:30:34 
+send: 7-7-0-0 s=6,c=1,t=0,pt=7,l=5,sg=0,st=ok:10.6
+send: 7-7-0-0 s=6,c=1,t=1,pt=7,l=5,sg=0,st=ok:37.9
+send: 7-7-0-0 s=7,c=1,t=0,pt=7,l=5,sg=0,st=ok:10.0
+2016/01/29 23:30:34 Light level: 59
+**************** PUMP STATUS ***********************
+Pump Mode is:  Daylight
+Pump Cycle:    On:15 Off:15
+Pump Schedule: Start:07:33 Stop:17:30
+Pump Daylight: Start:70 Current:59
+Pump Time:     2016/01/29 23:30:34 
+****************************************************
+************* ENVIRONMENT STATUS *******************
+Air temperature:10.60 Air humidity:37.90
+Water temperature:10.00
+****************************************************
+send: 7-7-0-0 s=1,c=1,t=2,pt=1,l=1,sg=0,st=ok:0
+send: 7-7-0-0 s=3,c=1,t=19,pt=2,l=2,sg=0,st=ok:3
+send: 7-7-0-0 s=4,c=1,t=24,pt=0,l=5,sg=0,st=ok:07:33
+send: 7-7-0-0 s=4,c=1,t=25,pt=0,l=5,sg=0,st=ok:17:30
+send: 7-7-0-0 s=5,c=1,t=37,pt=2,l=2,sg=0,st=ok:70
+send: 7-7-0-0 s=5,c=1,t=35,pt=2,l=2,sg=0,st=ok:59
+send: 7-7-0-0 s=2,c=1,t=37,pt=2,l=2,sg=0,st=ok:15
+send: 7-7-0-0 s=2,c=1,t=35,pt=2,l=2,sg=0,st=ok:15
+send: 7-7-0-0 s=10,c=1,t=24,pt=0,l=20,sg=0,st=ok:2016/01/29 23:30:34 
+send: 7-7-0-0 s=6,c=1,t=0,pt=7,l=5,sg=0,st=ok:10.6
+send: 7-7-0-0 s=6,c=1,t=1,pt=7,l=5,sg=0,st=ok:37.9
+send: 7-7-0-0 s=7,c=1,t=0,pt=7,l=5,sg=0,st=ok:10.0
